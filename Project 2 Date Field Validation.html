@@ -42,12 +42,17 @@ Make it so that the button is the only way in and out of field.
 		<meta name="description" content="Date Field Validation, JavaScript">
 		
 		<style type="text/css">
+			body {
+				display: flex;
+			}
+			
 			button {
 				pointer-events: auto;
 				margin-left: 3px;
 			}
+			
 			input[type=text] {
-				width: 25%;
+				width: 30%;
 				padding: 5px;
 				margin: 20px;
 				box-sizing: border-box;
@@ -71,22 +76,23 @@ Make it so that the button is the only way in and out of field.
 			}
 			
 			#form {
-				width: 30%;
+				flex: 1;
+				width: 40%;
 				border: 3px solid rgb(19, 0, 128);
 				overflow: visible;
 				background-color: rgb(13, 112, 99);
 				float: left;
 				pointer-events: none;
 			}
-
+			
 			#output {
-				width: 30%;
+				flex: 1;
+				width: 40%;
 				border: 3px solid rgb(4, 77, 8);
 				background-color: rgb(91, 100, 12);
 				float: left;
 				margin-left: 3px;
 			}
-			
 		</style>
 	</head>
 	
@@ -94,19 +100,22 @@ Make it so that the button is the only way in and out of field.
 		<div id="form">
 			<button onclick="inputField.focus();">Change Date</button>
 			<input name="DateInput" type="text" placeholder="dd/mm/yyyy" onfocus="this.select();">
-			<p>Please enter a date in a UK format, anything similar to "dd/mm/yyyy". For example; "29/7/19".</p>
+			<p>Please enter a date in a UK format.</p>
+			<p>Anything similar to "dd/mm/yyyy".</p>
+			<p>For example; "29/7/19".</p>
 		</div>
-
+		
 		<div id="output">
 			<p><b>Output:-</b></p>
 			</br>
 			<p id="d1"><i>Enter a date in the field on the left...</i></p>
-			<p id="d2"></p>
+			</br>
 		</div>
 		
 		<script type="text/javascript">
 			let inputField = document.getElementsByName('DateInput')[0];
-
+			let outputParentEl = document.getElementById('output');
+			
 			if (document.addEventListener) document.addEventListener("DOMContentLoaded", initialised, false);
 			else if (document.attachEvent) document.attachEvent("onreadystatechange", initialised);
 			else window.onload = initialised;
@@ -114,44 +123,40 @@ Make it so that the button is the only way in and out of field.
 			function initialised() {
 				inputField.addEventListener('keyup', function() {
 					checkInputtedChr(inputField);
+					outputBox();
 				});
-
+				
 				inputField.addEventListener('keydown', function(event) {
-					if ([36, 37, 38, 40].indexOf(event.keyCode) > -1) {
+					if ([17, 36, 37, 38, 40].indexOf(event.keyCode) > -1) {
 						event.preventDefault();
+					} else if (event.repeat) {
+						inputField.value = inputField.value.substring(0, inputField.value.length - 1);
+					} else if (outputParentEl.childNodes.length > 9) {
+						outputParentEl.removeChild(document.getElementById('USDate'));
+						outputParentEl.removeChild(document.getElementById('ISODate'));
 					}
 				});
-
+				
 				inputField.addEventListener('blur', function() {
-					checkInputtedChr(inputField,true);
+					outputBox(true);
 				});
 			}
 			
-			function checkInputtedChr(field, blur=false) {
+			function checkInputtedChr(field) {
 				let fieldVal = field.value;
 				let n = fieldVal.length;
 				let chr = fieldVal[n-1];
 				let prevChr = fieldVal[n-2];
 				let thirdReversedChr = fieldVal[n-3];
 				let int = parseInt(chr);
-
+				
 				function delChr(a) {
-					field.value = fieldVal.substring(0, n-1);
-					
+					field.value = field.value.substring(0, n-1);
+					console.log(2);
 					if (a) {
 						let seperator = fieldVal[fieldVal.search(/\D/g)] || '/';
 						field.value = field.value + seperator;
 					}
-				}
-
-				if (n==0) {
-					field.value = '';
-					document.getElementById('d1').innerHTML = '<i>Enter a date in the field on the left...</i>';
-				}else if (blur && (n<6 || isNaN(prevChr))) {
-					field.value = '';
-					document.getElementById('d1').innerHTML = '<i>Invalid Date Entered!</i>';
-				} else {
-					document.getElementById('d1').innerHTML = `Entered Date: <b>${fieldVal}</b>`;
 				}
 				
 				switch(n) {
@@ -160,7 +165,7 @@ Make it so that the button is the only way in and out of field.
 							delChr();
 						}
 						break;
-
+					
 					case 2:
 						if ((prevChr == 0 && (isNaN(int) || int == 0)) || (prevChr == 3 && int > 1)) {
 							delChr();
@@ -168,15 +173,16 @@ Make it so that the button is the only way in and out of field.
 							delChr(1);
 						}
 						break;
-
+					
 					case 3:
 						if (isNaN(prevChr) && isNaN(int)) {
 							delChr();
 						} else if (!isNaN(prevChr) && ['/','-','.'].indexOf(chr) == -1) {
 							delChr(1);
+							console.log(1);
 						}
 						break;
-
+						
 					case 4:
 						if ((isNaN(prevChr) && isNaN(int)) || (prevChr == 0 && (isNaN(int) || int == 0))) {
 							delChr();
@@ -185,7 +191,7 @@ Make it so that the button is the only way in and out of field.
 							delChr(1);
 						}
 						break;
-
+						
 					case 5:
 						if ((isNaN(prevChr) && isNaN(int)) ||
 						(prevChr == 1 && (int > 2 ||(!isNaN(thirdReversedChr) && !isNaN(int)))) ||
@@ -196,7 +202,7 @@ Make it so that the button is the only way in and out of field.
 							delChr(1);
 						}
 						break;
-
+					
 					case 6:
 						if (isNaN(prevChr) && isNaN(int)) {
 							delChr();
@@ -204,20 +210,20 @@ Make it so that the button is the only way in and out of field.
 							delChr(1);
 						}
 						break;
-
+					
 					case 7:
 					case 8:
 						if (isNaN(int)) {
 							delChr();
 						}
 						break;
-
+					
 					case 9:
 						if (isNaN(int) || fieldVal.lastIndexOf("/") == 3) {
 							delChr();
 						}
 						break;
-
+						
 					case 10:
 						if (isNaN(int) || fieldVal.lastIndexOf("/") == 4) {
 							delChr();
@@ -225,6 +231,35 @@ Make it so that the button is the only way in and out of field.
 						break;
 					default:
 						delChr();
+				}
+				
+				if (field.value.length > 0 && field.value[n-1] !== undefined && field.value[n-1].search(/\D/g) > -1 && fieldVal.search(/\D/g) > -1) {
+					delChr(1);
+				}
+			}
+			
+			function outputBox(blur=false) {
+				if (inputField.value.length == 0) {
+					inputField.value = '';
+					document.getElementById('d1').innerHTML = '<i>Enter a date in the field on the left...</i>';
+				} else if (blur && (inputField.value.length < 6 || isNaN(inputField.value[inputField.value.length - 2]))) {
+					inputField.value = '';
+					document.getElementById('d1').innerHTML = '<i>Invalid Date Entered!</i>';
+				} else {
+					document.getElementById('d1').innerHTML = 'Entered Date: <b>' + inputField.value + '</b>';
+					
+					if (blur && outputParentEl.childNodes.length < 10) {
+						let usDate = document.createElement('P');
+						usDate.setAttribute("id", "USDate");
+						usDate.innerHTML = 'US Date: <b>' + inputField.value + '</b>';
+						
+						let isoDate = document.createElement('P');
+						isoDate.setAttribute("id", "ISODate");
+						isoDate.innerHTML = 'ISO (International Standard) Date: <b>' + inputField.value + '</b>';
+						
+						outputParentEl.appendChild(usDate);
+						outputParentEl.appendChild(isoDate);
+					}
 				}
 			}
 		</script>

@@ -2,9 +2,10 @@
 
 
 <!--
-
-
-Without using pattern="^[0-9]*$" etc.
+DESCRIPTION/NOTES:-
+---------------------------------------------------------------
+Remote Name: https://github.com/tberey/test.git
+Branch Name: https://github.com/tberey/test/tree/tberey-date-validation-patch-1
 
 
 Add drop down for us/other formats input functionality.
@@ -13,18 +14,8 @@ Add drop down for us/other formats input functionality.
 Add feature that senses what format based on first/second chr's, and selects value on drop down.
 
 
-submit button to display date on page.
+Split into mm, dd, yyyy, in order to manipulate those into other date formats, for the output.
 
-
-Case 5 leftover:-
-else if (prevChr == 1 && !isNaN(thirdReversedChr) && !isNaN(int)) {
-	delChr();
-} else if (prevChr == 0 && !isNaN(thirdReversedChr) && !isNaN(int)) {
-	delChr();
-}
-
-
-focus loss if too short, delete what's in the space.
 
 
 Make it so that the button is the only way in and out of field.
@@ -48,7 +39,17 @@ Make it so that the button is the only way in and out of field.
 			
 			button {
 				pointer-events: auto;
-				margin-left: 3px;
+				background-color: rgb(23, 124, 207);
+ 				border: none;
+				border-radius:50%;
+ 				color: white;
+  				padding: 15px 32px;
+  				text-align: center;
+  				text-decoration: none;
+  				display: inline-block;
+ 				font-size: 10px;
+ 				margin: 4px 2px;
+				cursor: pointer;
 			}
 			
 			input[type=text] {
@@ -98,11 +99,10 @@ Make it so that the button is the only way in and out of field.
 	
 	<body>
 		<div id="form">
-			<button onclick="inputField.focus();">Change Date</button>
+			<button onclick="!buttonBool ? inputField.focus() : inputField.blur();">Change Date</button>
 			<input name="DateInput" type="text" placeholder="dd/mm/yyyy" onfocus="this.select();">
 			<p>Please enter a date in a UK format.</p>
 			<p>Anything similar to "dd/mm/yyyy".</p>
-			<p>For example; "29/7/19".</p>
 		</div>
 		
 		<div id="output">
@@ -115,6 +115,8 @@ Make it so that the button is the only way in and out of field.
 		<script type="text/javascript">
 			let inputField = document.getElementsByName('DateInput')[0];
 			let outputParentEl = document.getElementById('output');
+			let buttonBool;
+			var i = 0;
 			
 			if (document.addEventListener) document.addEventListener("DOMContentLoaded", initialised, false);
 			else if (document.attachEvent) document.attachEvent("onreadystatechange", initialised);
@@ -138,12 +140,17 @@ Make it so that the button is the only way in and out of field.
 				});
 				
 				inputField.addEventListener('blur', function() {
+					buttonBool = 0;
 					outputBox(true);
+				});
+
+				inputField.addEventListener('focus', function() {
+					buttonBool = 1;
 				});
 			}
 			
-			function checkInputtedChr(field) {
-				let fieldVal = field.value;
+			function checkInputtedChr() {
+				let fieldVal = inputField.value;
 				let n = fieldVal.length;
 				let chr = fieldVal[n-1];
 				let prevChr = fieldVal[n-2];
@@ -151,39 +158,34 @@ Make it so that the button is the only way in and out of field.
 				let int = parseInt(chr);
 				
 				function delChr(a) {
-					field.value = field.value.substring(0, n-1);
-					console.log(2);
-					if (a) {
-						let seperator = fieldVal[fieldVal.search(/\D/g)] || '/';
-						field.value = field.value + seperator;
+					inputField.value = fieldVal.substring(0, n-1);
+					//console.log('length: ' + inputField.value.split(/[-/.]/).length);
+					if (a /*&& inputField.value.search(/[-/.]/g)*/) {
+						let seperator = fieldVal[fieldVal.search(/[-/.]/)] || '/';
+						inputField.value = inputField.value + seperator;
 					}
 				}
 				
-				switch(n) {
-					case 1:
-						if (isNaN(int)) {
+				switch(true) {
+					case (n < 3):
+						if ((n == 1 && isNaN(int)) ||
+						(n == 2 && ((prevChr == 3 && int > 1) ||
+						(prevChr == 0 && (isNaN(int) || int == 0))))) {
 							delChr();
-						}
-						break;
-					
-					case 2:
-						if ((prevChr == 0 && (isNaN(int) || int == 0)) || (prevChr == 3 && int > 1)) {
-							delChr();
-						} else if (['/','-','.'].indexOf(chr) == -1 && (isNaN(int) || prevChr > 3)) {
+						} else if (n == 2 && ['/','-','.'].indexOf(chr) == -1 && (isNaN(int) || prevChr > 3)) {
 							delChr(1);
 						}
 						break;
 					
-					case 3:
+					case (n == 3):
 						if (isNaN(prevChr) && isNaN(int)) {
 							delChr();
 						} else if (!isNaN(prevChr) && ['/','-','.'].indexOf(chr) == -1) {
 							delChr(1);
-							console.log(1);
 						}
 						break;
 						
-					case 4:
+					case (n == 4):
 						if ((isNaN(prevChr) && isNaN(int)) || (prevChr == 0 && (isNaN(int) || int == 0))) {
 							delChr();
 						}else if ((prevChr == 1 && ['/','-','.'].indexOf(chr) == -1 && (int > 2 || isNaN(int))) ||
@@ -192,7 +194,7 @@ Make it so that the button is the only way in and out of field.
 						}
 						break;
 						
-					case 5:
+					case (n == 5):
 						if ((isNaN(prevChr) && isNaN(int)) ||
 						(prevChr == 1 && (int > 2 ||(!isNaN(thirdReversedChr) && !isNaN(int)))) ||
 						(prevChr == 0 && ((isNaN(thirdReversedChr) && (isNaN(int) || int == 0)) || (!isNaN(thirdReversedChr) && !isNaN(int))))) {
@@ -203,29 +205,19 @@ Make it so that the button is the only way in and out of field.
 						}
 						break;
 					
-					case 6:
-						if (isNaN(prevChr) && isNaN(int)) {
+					case (n == 6):
+						if ((isNaN(prevChr) && isNaN(int)) ||
+						(isNaN(thirdReversedChr) && isNaN(int))) {
 							delChr();
 						} else if (!isNaN(prevChr) && ((isNaN(thirdReversedChr) && isNaN(int)) || (!isNaN(thirdReversedChr) && ['/','-','.'].indexOf(chr) == -1))) {
 							delChr(1);
 						}
 						break;
 					
-					case 7:
-					case 8:
-						if (isNaN(int)) {
-							delChr();
-						}
-						break;
-					
-					case 9:
-						if (isNaN(int) || fieldVal.lastIndexOf("/") == 3) {
-							delChr();
-						}
-						break;
-						
-					case 10:
-						if (isNaN(int) || fieldVal.lastIndexOf("/") == 4) {
+					case (n < 11):
+						if ((n < 9 && isNaN(int)) ||
+						(n == 9 && (isNaN(int) || fieldVal.lastIndexOf("/") == 3)) ||
+						(n == 10 && (isNaN(int) || fieldVal.lastIndexOf("/") == 4))) {
 							delChr();
 						}
 						break;
@@ -233,7 +225,7 @@ Make it so that the button is the only way in and out of field.
 						delChr();
 				}
 				
-				if (field.value.length > 0 && field.value[n-1] !== undefined && field.value[n-1].search(/\D/g) > -1 && fieldVal.search(/\D/g) > -1) {
+				if (inputField.value.length > 1 && inputField.value[n-1] !== undefined && inputField.value[n-1].search(/[-/.]/) > -1 && fieldVal.substring(0, n-1).search(/[-/.]/) > -1) {
 					delChr(1);
 				}
 			}

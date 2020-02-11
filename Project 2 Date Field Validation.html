@@ -1,37 +1,42 @@
 <!DOCTYPE html>
 
-
 <!--
+
 DESCRIPTION/NOTES:-
----------------------------------------------------------------
-Remote Name: https://github.com/tberey/test.git
-Branch Name: https://github.com/tberey/test/tree/tberey-date-validation-patch-1
+--------------------------------------------------------------------------------------------
+
+A simple date validation tool, for any basic string input element(s), that validates dynamically as the end-user types out a date. It is designed to be as compatible (both backwards & cross-browser) as possible, while covering all user inputs that could be attempted when typing a date (both valid or invalid).
+
+============================================================================================
+
+Remote Name: https://github.com/tberey/date-validation
+Branch Name: https://github.com/tberey/test/tree/~
+
+============================================================================================
+
+1) Add drop down for US/other formats input functionality, to output a UK date plus the others.
 
 
-Add drop down for us/other formats input functionality.
+2) Make it so that the button is the only way in and out of field.
 
 
-Add feature that senses what format based on first/second chr's, and selects value on drop down.
+3) Add IE < 11 Support!
 
 
-Split into mm, dd, yyyy, in order to manipulate those into other date formats, for the output.
-
-
-
-Make it so that the button is the only way in and out of field.
+!!!!Note: USED SELENIUM FOR CROSS-USER AGENT TESTING!!!!
+!!!!Additional Comments!!!!
 
 -->
 
-
 <html>
 	<head>
-		<!-- Set a Responsive scaled viewport, and assign Metadata. -->
+		<!-- Set a Responsively scaled viewport, and assign some Metadata. -->
 		<meta charset="UTF-8">
 		<meta name="viewport" content="width=device-width,initial-scale=1">
 			<title>Project 2: Date Field Validation</title>
 		<meta name="author" content="Tom B">
 		<meta name="description" content="Date Field Validation, JavaScript">
-		
+		<!-- Set in-page CSS Attributes/Properties. -->
 		<style type="text/css">
 			body {
 				display: flex;
@@ -98,69 +103,79 @@ Make it so that the button is the only way in and out of field.
 	</head>
 	
 	<body>
+		<!-- Left-hand side of document, i.e the target input form/field area. -->
 		<div id="form">
 			<button onclick="!buttonBool ? inputField.focus() : inputField.blur();">Change Date</button>
 			<input name="DateInput" type="text" placeholder="dd/mm/yyyy" onfocus="this.select();">
 			<p>Please enter a date in a UK format.</p>
-			<p>Anything similar to "dd/mm/yyyy".</p>
+			<p>Anything similar to "d/m/y".</p>
 		</div>
-		
+		<!-- Right-hand side of document, i.e the output area. -->
 		<div id="output">
 			<p><b>Output:-</b></p>
 			</br>
 			<p id="d1"><i>Enter a date in the field on the left...</i></p>
-			</br>
+			<hr>
 		</div>
-		
+		<!-- Begin Scripting. -->
 		<script type="text/javascript">
-			let inputField = document.getElementsByName('DateInput')[0];
-			let outputParentEl = document.getElementById('output');
-			let buttonBool;
-			var i = 0;
+			let inputField = document.getElementsByName('DateInput')[0], outputParentEl = document.getElementById('output'), buttonBool;
 			
+			// Calls initialised function, once the document is ready/loaded.
 			if (document.addEventListener) document.addEventListener("DOMContentLoaded", initialised, false);
 			else if (document.attachEvent) document.attachEvent("onreadystatechange", initialised);
 			else window.onload = initialised;
 			
+			// Set/Unset Event Listeners in this function (some nesting in other listeners). These listeners will call relevant function, based on action/fieldValue.
 			function initialised() {
-				inputField.addEventListener('keyup', function() {
-					checkInputtedChr(inputField);
-					outputBox();
-				});
-				
-				inputField.addEventListener('keydown', function(event) {
-					if ([17, 36, 37, 38, 40].indexOf(event.keyCode) > -1) {
-						event.preventDefault();
-					} else if (event.repeat) {
-						inputField.value = inputField.value.substring(0, inputField.value.length - 1);
-					} else if (outputParentEl.childNodes.length > 9) {
-						outputParentEl.removeChild(document.getElementById('USDate'));
-						outputParentEl.removeChild(document.getElementById('ISODate'));
-					}
+				inputField.addEventListener('focus', function() {
+					
+					inputField.addEventListener('keydown', function(){
+						keyDownEv(event);
+					});
+					
+					inputField.addEventListener('keyup', function() {
+						checkInputtedChr(inputField);
+						outputBox();
+					});
 				});
 				
 				inputField.addEventListener('blur', function() {
-					buttonBool = 0;
 					outputBox(true);
+					
+					inputField.removeEventListener('keydown', function(){
+						keyDownEv(event);
+					});
+					
+					inputField.removeEventListener('keyup', function() {
+						checkInputtedChr(inputField);
+						outputBox();
+					});
 				});
-
-				inputField.addEventListener('focus', function() {
-					buttonBool = 1;
-				});
+			}
+			
+			function keyDownEv(event) {
+				if ([17, 36, 37, 38, 40].indexOf(event.keyCode) > -1) {
+					event.preventDefault();
+				} else if (event.repeat) {
+					inputField.value = inputField.value.substring(0, inputField.value.length - 1);
+				} else if (outputParentEl.childNodes.length > 11) {
+					['USDate','ISODate','fullDate','UADate'].forEach(function(val) {
+						outputParentEl.removeChild(document.getElementById(val));
+					});
+				}
 			}
 			
 			function checkInputtedChr() {
 				let fieldVal = inputField.value;
-				let n = fieldVal.length;
-				let chr = fieldVal[n-1];
-				let prevChr = fieldVal[n-2];
-				let thirdReversedChr = fieldVal[n-3];
+				let n = fieldVal.length
+				let chr = fieldVal[n-1], prevChr = fieldVal[n-2], thirdReversedChr = fieldVal[n-3];
 				let int = parseInt(chr);
 				
 				function delChr(a) {
 					inputField.value = fieldVal.substring(0, n-1);
-					//console.log('length: ' + inputField.value.split(/[-/.]/).length);
-					if (a /*&& inputField.value.search(/[-/.]/g)*/) {
+					
+					if (a) {
 						let seperator = fieldVal[fieldVal.search(/[-/.]/)] || '/';
 						inputField.value = inputField.value + seperator;
 					}
@@ -209,7 +224,8 @@ Make it so that the button is the only way in and out of field.
 						if ((isNaN(prevChr) && isNaN(int)) ||
 						(isNaN(thirdReversedChr) && isNaN(int))) {
 							delChr();
-						} else if (!isNaN(prevChr) && ((isNaN(thirdReversedChr) && isNaN(int)) || (!isNaN(thirdReversedChr) && ['/','-','.'].indexOf(chr) == -1))) {
+						} else if (!isNaN(prevChr) &&
+						((isNaN(thirdReversedChr) && isNaN(int)) || (!isNaN(thirdReversedChr) && ['/','-','.'].indexOf(chr) == -1))) {
 							delChr(1);
 						}
 						break;
@@ -225,8 +241,14 @@ Make it so that the button is the only way in and out of field.
 						delChr();
 				}
 				
-				if (inputField.value.length > 1 && inputField.value[n-1] !== undefined && inputField.value[n-1].search(/[-/.]/) > -1 && fieldVal.substring(0, n-1).search(/[-/.]/) > -1) {
+				// Conditional that deals with any invalid but conflicting scenario's that, as a result, can't be include in the above switch conditional. (Due to them being more specific problems, to be targeted).
+				if (inputField.value.length > 1 &&
+				inputField.value[n-1] !== undefined &&
+				inputField.value[n-1].search(/[-/.]/) > -1 &&
+				fieldVal.substring(0, n-1).search(/[-/.]/) > -1) {
 					delChr(1);
+				} else if (inputField.value.search(/([A-Z])/i) > -1 || inputField.value.search(/[\D]{2}/g) > -1) {
+					inputField.value = '';
 				}
 			}
 			
@@ -234,26 +256,46 @@ Make it so that the button is the only way in and out of field.
 				if (inputField.value.length == 0) {
 					inputField.value = '';
 					document.getElementById('d1').innerHTML = '<i>Enter a date in the field on the left...</i>';
-				} else if (blur && (inputField.value.length < 6 || isNaN(inputField.value[inputField.value.length - 2]))) {
+				} else if (blur &&
+				(inputField.value.length < 6 || isNaN(inputField.value[inputField.value.length - 2]) || isNaN(inputField.value[inputField.value.length - 4]))) {
 					inputField.value = '';
 					document.getElementById('d1').innerHTML = '<i>Invalid Date Entered!</i>';
 				} else {
-					document.getElementById('d1').innerHTML = 'Entered Date: <b>' + inputField.value + '</b>';
+					document.getElementById('d1').innerHTML = `Entered Date: <b>"${inputField.value}"</b>`;
 					
-					if (blur && outputParentEl.childNodes.length < 10) {
-						let usDate = document.createElement('P');
+					if (blur && inputField.value.split(/[-/.]/).length == 3 && outputParentEl.childNodes.length < 10) {
+						let dateConstistuentsArray = inputField.value.split(/[-/.]/);
+						for (let i = 0; i < 3; i++) {
+							switch (dateConstistuentsArray[i].length) {
+								case 1:
+									dateConstistuentsArray[i] = '0' + dateConstistuentsArray[i];
+									break;
+							}
+						}
+						
+						let dd = dateConstistuentsArray[0], mm = dateConstistuentsArray[1], yyyy = dateConstistuentsArray[2];
+						let usersDate = (new Date(yyyy, (mm-1), dd).toUTCString()).split(' 00:00:00 ');
+						let usDate = document.createElement('P'), isoDate = document.createElement('P'), fullDate = document.createElement('P'), uaDate = document.createElement('P');
+						
 						usDate.setAttribute("id", "USDate");
-						usDate.innerHTML = 'US Date: <b>' + inputField.value + '</b>';
+						usDate.innerHTML = `US Date: <b>${mm}-${dd}-${yyyy}</b>`;
 						
-						let isoDate = document.createElement('P');
 						isoDate.setAttribute("id", "ISODate");
-						isoDate.innerHTML = 'ISO (International Standard) Date: <b>' + inputField.value + '</b>';
+						isoDate.innerHTML = `ISO (International Standard) Date: <b>${yyyy}-${mm}-${dd}</b>`;
 						
-						outputParentEl.appendChild(usDate);
-						outputParentEl.appendChild(isoDate);
+						fullDate.setAttribute("id", "fullDate");
+						fullDate.innerHTML = `Full Date Entered:</br><b>${usersDate[0]} ${usersDate[1]}</b>`;
+						
+						uaDate.setAttribute("id", "UADate");
+						uaDate.innerHTML = `Your Local Time (<i><u>UTC ${-(Math.floor(new Date().getTimezoneOffset()/60)) || '+/-0'} hours</u></i>):</br><b>${new Date()}</b>`;
+						
+						[usDate,isoDate,fullDate,uaDate].forEach(function(val) {
+							outputParentEl.appendChild(val);
+						});
 					}
 				}
 			}
 		</script>
+		<!-- End of Scripting. -->
 	</body>
 </html>

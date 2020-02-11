@@ -2,42 +2,42 @@
 
 <!--
 
-DESCRIPTION/NOTES:-
+DESCRIPTION/NOTES/CHANGELOG:-
 --------------------------------------------------------------------------------------------
 
-A simple date validation tool, for any basic string input element(s), that validates dynamically as the end-user types out a date. It is designed to be as compatible (both backwards & cross-browser) as possible, while covering all user inputs that could be attempted when typing a date (both valid or invalid).
+A simple date validation tool, for any basic string input element(s), that validates dynamically as the end-user types in a date. It is designed to be as compatiable (both backwards & cross-browser) as possible, while covering all user inputs that could be attempted when typing a date (both valid or invalid).
 
 ============================================================================================
 
 Remote Name: https://github.com/tberey/date-validation
-Branch Name: https://github.com/tberey/test/tree/~
+Branch Name: https://github.com/tberey/test/tree/# (None)
 
 ============================================================================================
 
-1) Add drop down for US/other formats input functionality, to output a UK date plus the others.
+1) Add drop down for US/other formats input functionality, to then output the UK date with the others.
 
 
-2) Make it so that the button is the only way in and out of field.
+2) Make it so that the button is the only way to focus and blur field. !(In-Progress)!
 
 
-3) Add IE < 11 Support!
+3) Add IE 11 and lower support, by replacing ES6 with ES5.
 
 
-!!!!Note: USED SELENIUM FOR CROSS-USER AGENT TESTING!!!!
-!!!!Additional Comments!!!!
+Note: USED SELENIUM FOR CROSS-USER AGENT TESTING.
+
 
 -->
 
 <html>
 	<head>
-		<!-- Set a Responsively scaled viewport, and assign some Metadata. -->
+		<!-- Set a Responsively scaled viewport, and assign Metadata. -->
 		<meta charset="UTF-8">
 		<meta name="viewport" content="width=device-width,initial-scale=1">
-			<title>Project 2: Date Field Validation</title>
-		<meta name="author" content="Tom B">
-		<meta name="description" content="Date Field Validation, JavaScript">
-		<!-- Set in-page CSS Attributes/Properties. -->
-		<style type="text/css">
+			<title>Input Field Date Validation</title>
+		<meta name="author" content="TB">
+		<meta name="description" content="Date, Input, Field, Validation, JavaScript, HTML, CSS, Regexp">
+		<!-- Begin Styling. -->
+		<style type="text/css"> /* Set in-page CSS Attributes/Properties. */
 			body {
 				display: flex;
 			}
@@ -100,10 +100,11 @@ Branch Name: https://github.com/tberey/test/tree/~
 				margin-left: 3px;
 			}
 		</style>
+		<!-- End of Styling. -->
 	</head>
-	
+	<!---------------------------------------------------------------------------------------------------------------->
 	<body>
-		<!-- Left/Blue input side of document area. Where the targeted element nests. -->
+		<!-- Left/Blue input side of document area, where the targeted element nests. -->
 		<div id="form">
 			<button onclick="!buttonBool ? inputField.focus() : inputField.blur();">Change Date</button>
 			<input name="DateInput" type="text" placeholder="dd/mm/yyyy" onfocus="this.select();">
@@ -122,7 +123,7 @@ Branch Name: https://github.com/tberey/test/tree/~
 			// Global Declaration Space.
 			let inputField = document.getElementsByName('DateInput')[0], outputParentEl = document.getElementById('output'), buttonBool;
 			
-			// Calls the 'initialised' function, once the document is ready/fully-loaded.
+			// Call the 'initialised' function, when document is ready/fully-loaded.
 			if (document.addEventListener) document.addEventListener("DOMContentLoaded", initialised, false);
 			else if (document.attachEvent) document.attachEvent("onreadystatechange", initialised);
 			else window.onload = initialised;
@@ -142,7 +143,7 @@ Branch Name: https://github.com/tberey/test/tree/~
 				});
 				
 				inputField.addEventListener('blur', () => {
-					outputBox(true);
+					outputBox(true); // Pass through truthy argument to indicate field has no focus, so conditional will determine incomplete dates are now unaccepatble.
 					
 					inputField.removeEventListener('keydown', () => {
 						keyDownEv(event);
@@ -155,10 +156,12 @@ Branch Name: https://github.com/tberey/test/tree/~
 				});
 			}
 			
+			// 1) Some generic user input error handling, in that it; (i) disables certain navigation keys, and (ii) by passing the keydown event as an argument, prevents a key from being held down and producing many characters in the field.
+			// 2) Removes our created elements in the output div/area, if the date is changed in any way (so to partially-initialise output).
 			function keyDownEv(event) {
-				if ([17, 36, 37, 38, 40].indexOf(event.keyCode) > -1) {
+				if ([17, 36, 37, 40].indexOf(event.keyCode) > -1) { // [ctrl, home, left arrow, down arrow]
 					event.preventDefault();
-				} else if (event.repeat) {
+				} else if (event.repeat) { 
 					inputField.value = inputField.value.substring(0, inputField.value.length - 1);
 				} else if (outputParentEl.childNodes.length > 11) {
 					['USDate','ISODate','fullDate','UADate'].forEach((val) => {
@@ -167,12 +170,14 @@ Branch Name: https://github.com/tberey/test/tree/~
 				}
 			}
 			
+			//Function is called on a key-by-key press basis, to check each inputted character is valid (through a series of conditionals, and one overarching switch conditional). If invalid, deletes said character.
 			function checkInputtedChr() {
 				let fieldVal = inputField.value;
 				let n = fieldVal.length
 				let chr = fieldVal[n-1], prevChr = fieldVal[n-2], thirdReversedChr = fieldVal[n-3];
 				let int = parseInt(chr);
 				
+				//Function is called whenever an invalid character is conditionally detected during the date inputting, and simply deletes it. Further more when truthy argument is passed in with the call, the conditional with replace the removed character with a actual date seperator (and will match the user's seperator if there is one already present).
 				function delChr(a) {
 					inputField.value = fieldVal.substring(0, n-1);
 					
@@ -182,6 +187,7 @@ Branch Name: https://github.com/tberey/test/tree/~
 					}
 				}
 				
+				// Bulk of the validation checks occur using this switch condtional statement, which uses a case for each instance of a character being enetered into field.
 				switch(true) {
 					case (n < 3):
 						if ((n == 1 && isNaN(int)) ||
@@ -238,22 +244,26 @@ Branch Name: https://github.com/tberey/test/tree/~
 							delChr();
 						}
 						break;
+					
 					default:
 						delChr();
+						inputField.blur();
 				}
 				
-				// Conditional that deals with any invalid but conflicting scenario's that, as a result, can't be include in the above switch conditional. (Due to them being more specific problems, to be targeted).
+				// Conditional block, that deals with any invalid input (but) that conflicts with any of the above conditions in the switch statement, or any other invalid entries that can be determined at any and all time during the user input. Checking for two consecutive characters that are not numbers, or if a 'keyboard mash' has occured.
 				if (inputField.value.length > 1 &&
 				inputField.value[n-1] !== undefined &&
 				inputField.value[n-1].search(/[-/.]/) > -1 &&
 				fieldVal.substring(0, n-1).search(/[-/.]/) > -1) {
 					delChr(1);
 				} else if (inputField.value.search(/([A-Z])/i) > -1 || inputField.value.search(/[\D]{2}/g) > -1) {
-					inputField.value = '';
+					inputField.value = ''; // This is necessary as this condition being met indicates that a load of keys at the same time (mash the keyboard) and bypassing the above key-press by key-press checks on the preceding characters inputted.
 				}
 			}
 			
+			// Construct the output div/area further, by setting the instructional text dynamically, while also building the html elements that will host the further dates/data manipulated from the user's entered date, when it has been completed. Also counters incomplete dates, by emptying the field. Default parameter is falsy for passing through during field input to avoid meeting the conditions for this (incomplete dates wouldn't be deleted at this early stage).
 			function outputBox(blur=false) {
+				
 				if (inputField.value.length == 0) {
 					inputField.value = '';
 					document.getElementById('d1').innerHTML = '<i>Enter a date in the field on the left...</i>';
@@ -276,7 +286,7 @@ Branch Name: https://github.com/tberey/test/tree/~
 						
 						let dd = dateConstistuentsArray[0], mm = dateConstistuentsArray[1], yyyy = dateConstistuentsArray[2];
 						let userInputDate = (new Date(yyyy, (mm-1), dd).toUTCString()).split(' 00:00:00 ');
-						let usDate = document.createElement('P'),
+						let usDate = document.createElement('P'), // Build the addtional html elements, to be appended to document body.
 						isoDate = document.createElement('P'), fullDate = document.createElement('P'), uaDate = document.createElement('P');
 						
 						usDate.setAttribute("id", "USDate");
@@ -292,7 +302,7 @@ Branch Name: https://github.com/tberey/test/tree/~
 						uaDate.innerHTML = `Your Local Time (<i><u>UTC ${-(Math.floor(new Date().getTimezoneOffset()/60)) || '+/-0'} hours</u></i>):</br><b>${new Date()}</b>`;
 						
 						[usDate,isoDate,fullDate,uaDate].forEach((val) => {
-							outputParentEl.appendChild(val);
+							outputParentEl.appendChild(val); // Append the new elements to body, once date is complete and validated.
 						});
 					}
 				}
@@ -301,3 +311,4 @@ Branch Name: https://github.com/tberey/test/tree/~
 		<!-- End of Scripting. -->
 	</body>
 </html>
+<!-- End of HTML. -->

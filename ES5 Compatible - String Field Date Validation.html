@@ -1,33 +1,16 @@
-<!DOCTYPE html>
-
 <!--
+!! See 'ES6 - String Field Date Validation.html', the main intended version, for more info & upcoming features!!
 
-DESCRIPTION/NOTES/CHANGELOG:-
---------------------------------------------------------------------------------------------
-
-A simple date validation tool, for any basic string input element(s), that validates dynamically as the end-user types in a date. It is designed to be as compatiable (both backwards & cross-browser) as possible, while covering all user inputs that could be attempted when typing a date (both valid or invalid).
-
-============================================================================================
-
-Remote Name: https://github.com/tberey/date-validation
-Branch Name: https://github.com/tberey/test/tree/# (None)
-
-============================================================================================
-
-1) Add drop down for US/other formats input functionality, to then output the UK date with the others.
+A simple date validation tool, for any basic string input element(s), that validates dynamically as the end-user types in a UK date, and will reacts accordingly. It is designed to be as compatible as possible (both backwards & cross-browser), while covering all user inputs that could be attempted when typing in a date (both valid or invalid).
 
 
-2) Make it so that the button is the only way to focus and blur field. !(In-Progress)!
-
-
-3) Add IE 11 and lower support, by replacing ES6 with ES5.
-
-
-Note: USED SELENIUM FOR CROSS-USER AGENT TESTING.
-
-
+There are 13 functions in this file.
+Function with the largest signature take 1 arguments, while the median is 0.
+Largest function has 22 statements in it, while the median is 2.
+The most complex function has a cyclomatic complexity value of 41 while the median is 1.
 -->
 
+<!DOCTYPE html>
 <html>
 	<head>
 		<!-- Set a Responsively scaled viewport, and assign Metadata. -->
@@ -102,16 +85,16 @@ Note: USED SELENIUM FOR CROSS-USER AGENT TESTING.
 		</style>
 		<!-- End of Styling. -->
 	</head>
-	<!---------------------------------------------------------------------------------------------------------------->
+	
 	<body>
 		<!-- Left/Blue input side of document area, where the targeted element nests. -->
 		<div id="form">
-			<button onclick="!buttonBool ? inputField.focus() : inputField.blur();">Change Date</button>
+			<button onclick="inputField.focus();">Change Date</button>
 			<input name="DateInput" type="text" placeholder="dd/mm/yyyy" onfocus="this.select();">
 			<p>Please enter a date in a UK format.</p>
 			<p>Anything similar to "d/m/y".</p>
 		</div>
-		<!-- Right/Green side of document area, where the output is. -->
+		<!-- Right/Green side of document area, where the "Output" is. -->
 		<div id="output">
 			<p><b>Output:-</b></p>
 			</br>
@@ -120,82 +103,84 @@ Note: USED SELENIUM FOR CROSS-USER AGENT TESTING.
 		</div>
 		<!-- Begin Scripting. -->
 		<script type="text/javascript">
-			// Global Declaration Space.
-			let inputField = document.getElementsByName('DateInput')[0], outputParentEl = document.getElementById('output'), buttonBool;
+			// Global Scope Declaration Space.
+			var inputField = document.getElementsByName('DateInput')[0], outputParentEl = document.getElementById('output'); // Multiple local variables declared on this line.
 			
 			// Call the 'initialised' function, when document is ready/fully-loaded.
 			if (document.addEventListener) document.addEventListener("DOMContentLoaded", initialised, false);
 			else if (document.attachEvent) document.attachEvent("onreadystatechange", initialised);
 			else window.onload = initialised;
 			
-			// Set/Unset Event Listeners within this function (some nested). The active listeners will call relevant the function, based on action/event.
+			// Set/Unset Event Listeners when function called (some are nested). Active listeners will call relevant function, based on event/action.
 			function initialised() {
-				inputField.addEventListener('focus', () => {
+				inputField.addEventListener('focus', function () {
 					
-					inputField.addEventListener('keydown', () => {
+					inputField.addEventListener('keydown', function () {
 						keyDownEv(event);
 					});
 					
-					inputField.addEventListener('keyup', () => {
+					inputField.addEventListener('keyup', function() {
 						checkInputtedChr(inputField);
-						outputBox();
+						outputBox(false);
 					});
 				});
 				
-				inputField.addEventListener('blur', () => {
-					outputBox(true); // Pass through truthy argument to indicate field has no focus, so conditional will determine incomplete dates are now unaccepatble.
+				inputField.addEventListener('blur', function() {
+					outputBox(true); // Pass through truthy argument with call, to indicate field has no focus, so conditional will determine incomplete dates are now unacceptable.
 					
-					inputField.removeEventListener('keydown', () => {
+					inputField.removeEventListener('keydown', function() {
 						keyDownEv(event);
 					});
 					
-					inputField.removeEventListener('keyup', () => {
+					inputField.removeEventListener('keyup', function() {
 						checkInputtedChr(inputField);
-						outputBox();
+						outputBox(false);
 					});
 				});
 			}
 			
-			// 1) Some generic user input error handling, in that it; (i) disables certain navigation keys, and (ii) by passing the keydown event as an argument, prevents a key from being held down and producing many characters in the field.
-			// 2) Removes our created elements in the output div/area, if the date is changed in any way (so to partially-initialise output).
+			// Call function on keydown event. Disable certain navigation keys, and pass keydown event as an argument to access properties. Prevent a key from being held down and producing many characters in the field. Also remove created elements from the output div/area, if the date is changed in any way (so to initialise output).
 			function keyDownEv(event) {
 				if ([17, 36, 37, 40].indexOf(event.keyCode) > -1) { // [ctrl, home, left arrow, down arrow]
 					event.preventDefault();
 				} else if (event.repeat) { 
 					inputField.value = inputField.value.substring(0, inputField.value.length - 1);
 				} else if (outputParentEl.childNodes.length > 11) {
-					['USDate','ISODate','fullDate','UADate'].forEach((val) => {
+					['USDate','ISODate','fullDate','UADate'].forEach(function(val) {
 						outputParentEl.removeChild(document.getElementById(val));
 					});
 				}
 			}
 			
-			//Function is called on a key-by-key press basis, to check each inputted character is valid (through a series of conditionals, and one overarching switch conditional). If invalid, deletes said character.
+			// Call function on key-by-key press (event) basis, check each character is valid (through a nest of conditionals). If invalid, delete this.character, by function call.
 			function checkInputtedChr() {
-				let fieldVal = inputField.value;
-				let n = fieldVal.length
-				let chr = fieldVal[n-1], prevChr = fieldVal[n-2], thirdReversedChr = fieldVal[n-3];
-				let int = parseInt(chr);
+				var fieldVal = inputField.value;
+				var n = fieldVal.length;
+				var chr = fieldVal[n-1], prevChr = fieldVal[n-2], thirdReversedChr = fieldVal[n-3]; // Multiple local variables declared on this line.
+				var int = parseInt(chr);
 				
-				//Function is called whenever an invalid character is conditionally detected during the date inputting, and simply deletes it. Further more when truthy argument is passed in with the call, the conditional with replace the removed character with a actual date seperator (and will match the user's seperator if there is one already present).
+				// Call when invalid character is conditionally detected during input, and delete. Furthermore when truthy argument is passed in with the call, the conditional will replace the removed character with a suitable separator (and will match the user's separator if separator already present).
 				function delChr(a) {
 					inputField.value = fieldVal.substring(0, n-1);
 					
 					if (a) {
-						let seperator = fieldVal[fieldVal.search(/[-/.]/)] || '/';
-						inputField.value = inputField.value + seperator;
+						var separator = fieldVal[fieldVal.search(/[-/.]/)] || '/'; // Assign user's separator, unless falsey then assigns '/' as separator instead.
+						inputField.value = inputField.value + separator; // Appends what is already in the field.
 					}
 				}
 				
-				// Bulk of the validation checks occur using this switch condtional statement, which uses a case for each instance of a character being enetered into field.
+				// Switch conditional check each instance of a character input. Each case is checking at set string lengths (n).
 				switch(true) {
 					case (n < 3):
 						if ((n == 1 && isNaN(int)) ||
 						(n == 2 && ((prevChr == 3 && int > 1) ||
 						(prevChr == 0 && (isNaN(int) || int == 0))))) {
-							delChr();
+
+							delChr(); // Passes falsey argument to indicate separator is NOT needed in place of removed character.
+
 						} else if (n == 2 && ['/','-','.'].indexOf(chr) == -1 && (isNaN(int) || prevChr > 3)) {
-							delChr(1);
+
+							delChr(1); // Passes truthy argument to indicate separator needed in place of removed character.
 						}
 						break;
 					
@@ -248,21 +233,21 @@ Note: USED SELENIUM FOR CROSS-USER AGENT TESTING.
 					default:
 						delChr();
 						inputField.blur();
-				}
+				} // End of cases for conditional.
 				
-				// Conditional block, that deals with any invalid input (but) that conflicts with any of the above conditions in the switch statement, or any other invalid entries that can be determined at any and all time during the user input. Checking for two consecutive characters that are not numbers, or if a 'keyboard mash' has occured.
+				// Conditional block, to deal with any invalid entry that can be determined at any point during input. Check for two consecutive characters that are not numbers, or if a number of keys pressed simultaneously (which can bypass key-by-key check above).
 				if (inputField.value.length > 1 &&
 				inputField.value[n-1] !== undefined &&
 				inputField.value[n-1].search(/[-/.]/) > -1 &&
 				fieldVal.substring(0, n-1).search(/[-/.]/) > -1) {
 					delChr(1);
 				} else if (inputField.value.search(/([A-Z])/i) > -1 || inputField.value.search(/[\D]{2}/g) > -1) {
-					inputField.value = ''; // This is necessary as this condition being met indicates that a load of keys at the same time (mash the keyboard) and bypassing the above key-press by key-press checks on the preceding characters inputted.
+					inputField.value = ''; // This condition being met indicates a number of keys pressed simultaneously, bypassing the above key-press by key-press checks, so clear field fully, rather than delete character.
 				}
 			}
 			
-			// Construct the output div/area further, by setting the instructional text dynamically, while also building the html elements that will host the further dates/data manipulated from the user's entered date, when it has been completed. Also counters incomplete dates, by emptying the field. Default parameter is falsy for passing through during field input to avoid meeting the conditions for this (incomplete dates wouldn't be deleted at this early stage).
-			function outputBox(blur=false) {
+			// Construct the output div/area further, by updating the instructional text dynamically during inputting, while also build the html elements to host the further data manipulated from the user's entered date. Also counter any incomplete dates, by emptying the field, with default parameter set falsey for pass through during key press event (to prevent incomplete dates being deleted whilst inputting).
+			function outputBox(blur) {
 				
 				if (inputField.value.length == 0) {
 					inputField.value = '';
@@ -272,37 +257,37 @@ Note: USED SELENIUM FOR CROSS-USER AGENT TESTING.
 					inputField.value = '';
 					document.getElementById('d1').innerHTML = '<i>Invalid Date Entered!</i>';
 				} else {
-					document.getElementById('d1').innerHTML = `Entered Date: <b>"${inputField.value}"</b>`;
+					document.getElementById('d1').innerHTML = 'Entered Date: <b>"' + inputField.value + '"</b>';
 					
 					if (blur && inputField.value.split(/[-/.]/).length == 3 && outputParentEl.childNodes.length < 10) {
-						let dateConstistuentsArray = inputField.value.split(/[-/.]/);
-						for (let i = 0; i < 3; i++) {
-							switch (dateConstistuentsArray[i].length) {
+						var dateConstistuentsArray = inputField.value.split(/[-/.]/);
+						for (var i = 0; i < 3; i++) {
+							switch (dateConstistuentsArray[i].length) { // Prepend a literal string '0' to single digits dd or mm.
 								case 1:
 									dateConstistuentsArray[i] = '0' + dateConstistuentsArray[i];
 									break;
 							}
 						}
 						
-						let dd = dateConstistuentsArray[0], mm = dateConstistuentsArray[1], yyyy = dateConstistuentsArray[2];
-						let userInputDate = (new Date(yyyy, (mm-1), dd).toUTCString()).split(' 00:00:00 ');
-						let usDate = document.createElement('P'), // Build the addtional html elements, to be appended to document body.
+						var dd = dateConstistuentsArray[0], mm = dateConstistuentsArray[1], yyyy = dateConstistuentsArray[2]; // Multiple variables declared on these lines.
+						var userInputDate = (new Date(yyyy, (mm-1), dd).toUTCString()).split(' 00:00:00 ');
+						var usDate = document.createElement('P'), // Build the additional html elements, to be appended to document body.
 						isoDate = document.createElement('P'), fullDate = document.createElement('P'), uaDate = document.createElement('P');
 						
-						usDate.setAttribute("id", "USDate");
-						usDate.innerHTML = `US Date: <b>${mm}-${dd}-${yyyy}</b>`;
+						usDate.setAttribute("id", "USDate"); // Output all data.
+						usDate.innerHTML = 'US Date: <b>' + mm + '-' + dd + '-' + yyyy + '</b>';
 						
 						isoDate.setAttribute("id", "ISODate");
-						isoDate.innerHTML = `ISO (International Standard) Date: <b>${yyyy}-${mm}-${dd}</b>`;
+						isoDate.innerHTML = 'ISO (International Standard) Date: <b>' + yyyy + '-' + mm + '-' + dd + '</b>';
 						
 						fullDate.setAttribute("id", "fullDate");
-						fullDate.innerHTML = `Full Date Entered:</br><b>${userInputDate[0]} ${userInputDate[1]}</b>`;
+						fullDate.innerHTML = 'Full Date Entered:</br><b>' + userInputDate[0] + userInputDate[1] + '</b>';
 						
 						uaDate.setAttribute("id", "UADate");
-						uaDate.innerHTML = `Your Local Time (<i><u>UTC ${-(Math.floor(new Date().getTimezoneOffset()/60)) || '+/-0'} hours</u></i>):</br><b>${new Date()}</b>`;
+						uaDate.innerHTML = 'Your Local Time (<i><u>UTC ' + (-(Math.floor(new Date().getTimezoneOffset()/60)) || '+/-0') + ' hours</u></i>):</br><b>' + (new Date()) + '</b>';
 						
-						[usDate,isoDate,fullDate,uaDate].forEach((val) => {
-							outputParentEl.appendChild(val); // Append the new elements to body, once date is complete and validated.
+						[usDate,isoDate,fullDate,uaDate].forEach(function(val) {
+							outputParentEl.appendChild(val); // Append the new elements to body, when date is complete and validated.
 						});
 					}
 				}
@@ -312,3 +297,4 @@ Note: USED SELENIUM FOR CROSS-USER AGENT TESTING.
 	</body>
 </html>
 <!-- End of HTML. -->
+<!--github: tberey-->

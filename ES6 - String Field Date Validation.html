@@ -1,0 +1,344 @@
+<!-- DESCRIPTION / NOTES / PLANNING:
+
+---------------------------------------------------------------[Version 1.0]---------------------------
+
+A simple date validation tool, for any basic string input element(s), that validates dynamically as the end-user types in a UK date, and will reacts accordingly. It is designed to be as compatible as possible (both backwards & cross-browser), while covering all user inputs that could be attempted when typing in a date (both valid or invalid). See README.md for further information.
+
+There are 13 functions in this file.
+Function with the largest signature take 1 arguments, while the median is 0.
+Largest function has 22 statements in it, while the median is 2.
+The most complex function has a cyclomatic complexity value of 41 while the median is 1.
+
+
+============================================================================================
+
+Remote Name: https://github.com/tberey/date-validation
+
+Branch Name: https://github.com/tberey/date-validation/tree/#
+
+============================================================================================
+
+
+1) Add drop down for US/other formats input functionality, to then output the UK date with the others.
+
+2) Make it so that the button is the only way to focus and blur field. !(In-Progress)!
+
+3) Add IE 10 and lower support?
+
+
+Note: USE SELENIUM FOR CROSS USER AGENT TESTING.
+-->
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<!-- Set a Responsively scaled viewport, and assign Metadata. -->
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width,initial-scale=1">
+			<title>Input Field Date Validation</title>
+		<meta name="author" content="TB">
+		<meta name="description" content="Date, Input, Field, Validation, JavaScript, HTML, CSS, Regexp">
+		
+		<!-- Begin Styling. -->
+		<style type="text/css"> /* Set in-page CSS Attributes/Properties. */
+			body {
+				display: flex;
+			}
+
+			button {
+				pointer-events: auto;
+				background-color: rgb(23, 124, 207);
+ 				border: none;
+				border-radius:50%;
+ 				color: white;
+  				padding: 15px 32px;
+  				text-align: center;
+  				text-decoration: none;
+  				display: inline-block;
+ 				font-size: 10px;
+ 				margin: 4px 2px;
+				cursor: pointer;
+			}
+			
+			input[type=text] {
+				width: 30%;
+				padding: 5px;
+				margin: 20px;
+				box-sizing: border-box;
+				border: none;
+				border-bottom: 3px solid rgb(161, 1, 1);
+				color: white;
+				background-color: rgb(13, 112, 99);
+			}
+			
+			input[type=text]:focus {
+				width: 50%;
+				color: black;
+				border: 3px solid rgb(32, 221, 32);
+				background-color: #89f885;
+			}
+			
+			input::placeholder {
+				color: rgb(161, 1, 1);
+			}
+			
+			#form {
+				flex: 1;
+				width: 40%;
+				border: 3px solid rgb(19, 0, 128);
+				overflow: visible;
+				background-color: rgb(13, 112, 99);
+				float: left;
+				pointer-events: none;
+			}
+			
+			#output {
+				flex: 1;
+				width: 40%;
+				border: 3px solid rgb(4, 77, 8);
+				background-color: rgb(91, 100, 12);
+				float: left;
+				margin-left: 3px;
+			}
+		</style>
+		<!-- End of Styling. -->
+	</head>
+
+	<body>
+		<!-- Left/Blue input side of document area, where the targeted element nests. -->
+		<div id="form">
+			<button onclick="!buttonBool ? inputField.focus() : inputField.blur();">Change Date</button>
+			<input name="DateInput" type="text" placeholder="dd/mm/yyyy" onfocus="this.select();">
+			<p>Please enter a date in a UK format.</p>
+			<p>Anything similar to "d/m/y".</p>
+		</div>
+		<!-- Right/Green side of document area, where the "output" is. -->
+		<div id="output">
+			<p><b>Output:-</b></p>
+			</br>
+			<p id="d1"><i>Enter a date in the field on the left...</i></p>
+			<hr>
+		</div>
+		<!-- Begin Scripting. -->
+		<script type="text/javascript">
+			// Global Scope Declaration Space.
+			let inputField = document.getElementsByName('DateInput')[0], outputParentEl = document.getElementById('output'), buttonBool; // Multiple local variables declared on this line.
+
+			// Call 'initialised' function, when document is ready/fully-loaded.
+			if (document.addEventListener) document.addEventListener("DOMContentLoaded", initialised, false);
+			else if (document.attachEvent) document.attachEvent("onreadystatechange", initialised);
+			else window.onload = initialised;
+			
+			// Set/Unset Event Listeners when function called (some are nested). Active listeners will call relevant function, based on event/action.
+			function initialised() {
+				inputField.addEventListener('focus', () => {
+					
+					inputField.addEventListener('keydown', () => {
+						keyDownEv(event); // Pass keydown event as argument parameter
+					});
+					
+					inputField.addEventListener('keyup', () => {
+						checkInputtedChr(inputField);
+						outputBox();
+					});
+				});
+				
+				inputField.addEventListener('blur', () => {
+					outputBox(true); // Pass through truthy argument with call, to indicate field has no focus, so conditional will determine incomplete dates are now unacceptable.
+					
+					inputField.removeEventListener('keydown', () => {
+						keyDownEv(event);
+					});
+					
+					inputField.removeEventListener('keyup', () => {
+						checkInputtedChr(inputField);
+						outputBox();
+					});
+				});
+			}
+
+			// Call function on keydown event. Disable certain navigation keys, and pass keydown event as an argument to access properties. Prevent a key from being held down and producing many characters in the field. Also remove created elements from the output div/area, if the date is changed in any way (so to initialise output).
+			function keyDownEv(event) {
+				if ([17, 36, 37, 40].indexOf(event.keyCode) > -1) { // [ctrl, home, left arrow, down arrow]
+					event.preventDefault();
+				} else if (event.repeat) { 
+					inputField.value = inputField.value.substring(0, inputField.value.length - 1);
+				} else if (outputParentEl.childNodes.length > 11) {
+					['USDate','ISODate','fullDate','UADate'].forEach((val) => {
+						outputParentEl.removeChild(document.getElementById(val));
+					});
+				}
+			}
+			
+			// Call function on key-by-key press (event) basis, check each character is valid (through a nest of conditionals). If invalid, delete this.character, by function call.
+			function checkInputtedChr() {
+				let fieldVal = inputField.value;
+				let n = fieldVal.length;
+				let chr = fieldVal[n-1], prevChr = fieldVal[n-2], thirdReversedChr = fieldVal[n-3]; // Multiple local variables declared on this line.
+				let int = parseInt(chr);
+				
+				// Call when invalid character is conditionally detected during input, and delete. Furthermore when truthy argument is passed in with the call, the conditional will replace the removed character with a suitable separator (and will match the user's separator if separator already present).
+				function delChr(a) {
+					inputField.value = fieldVal.substring(0, n-1);
+					
+					if (a) {
+						let separator = fieldVal[fieldVal.search(/[-/.]/)] || '/';  // Assign user's separator, unless falsey then assigns '/' as separator instead.
+						inputField.value = inputField.value + separator; // Appends what is already in the field.
+					}
+				}
+				
+				// Switch conditional check each instance of a character input. Each case is checking at set string lengths (n).
+				switch(true) {
+					case (n < 3):
+
+						if ((n == 1 && isNaN(int)) ||
+						(n == 2 && ((prevChr == 3 && int > 1) ||
+						(prevChr == 0 && (isNaN(int) || int == 0))))) {
+							
+							delChr(); // Passes falsey argument to indicate separator is NOT needed in place of removed character.
+
+						} else if (n == 2 && ['/','-','.'].indexOf(chr) == -1 && (isNaN(int) || prevChr > 3)) {
+							
+							delChr(1); // Passes truthy argument to indicate separator needed in place of removed character.
+						}
+						break;
+					
+					case (n == 3):
+
+						if (isNaN(prevChr) && isNaN(int)) {
+							delChr();
+						} else if (!isNaN(prevChr) && ['/','-','.'].indexOf(chr) == -1) {
+							delChr(1);
+						}
+						break;
+						
+					case (n == 4):
+
+						if ((isNaN(prevChr) && isNaN(int)) || (prevChr == 0 && (isNaN(int) || int == 0))) {
+							
+							delChr();
+
+						}else if ((prevChr == 1 && ['/','-','.'].indexOf(chr) == -1 && (int > 2 || isNaN(int))) ||
+						(prevChr > 1 && ['/','-','.'].indexOf(chr) == -1)) {
+							
+							delChr(1);
+
+						}
+						break;
+						
+					case (n == 5):
+
+						if ((isNaN(prevChr) && isNaN(int)) ||
+						(prevChr == 1 && (int > 2 ||(!isNaN(thirdReversedChr) && !isNaN(int)))) ||
+						(prevChr == 0 && ((isNaN(thirdReversedChr) && (isNaN(int) || int == 0)) || (!isNaN(thirdReversedChr) && !isNaN(int))))) {
+							
+							delChr();
+
+						} else if ((prevChr < 2 && ['/','-','.'].indexOf(chr) == -1 && isNaN(int)) ||
+						(prevChr > 1 && ['/','-','.'].indexOf(chr) == -1)) {
+							
+							delChr(1);
+
+						}
+						break;
+					
+					case (n == 6):
+
+						if ((isNaN(prevChr) && isNaN(int)) ||
+						(isNaN(thirdReversedChr) && isNaN(int))) {
+							
+							delChr();
+
+						} else if (!isNaN(prevChr) &&
+						((isNaN(thirdReversedChr) && isNaN(int)) || (!isNaN(thirdReversedChr) && ['/','-','.'].indexOf(chr) == -1))) {
+							
+							delChr(1);
+						}
+						break;
+					
+					case (n < 11):
+
+						if ((n < 9 && isNaN(int)) ||
+						(n == 9 && (isNaN(int) || fieldVal.lastIndexOf("/") == 3)) ||
+						(n == 10 && (isNaN(int) || fieldVal.lastIndexOf("/") == 4))) {
+							
+							delChr();
+						}
+						break;
+					
+					default:
+						delChr();
+						inputField.blur();
+				} // End of cases for conditional.
+				
+				// Conditional block, to deal with any invalid entry that can be determined at any point during input. Check for two consecutive characters that are not numbers, or if a number of keys pressed simultaneously (which can bypass key-by-key check above).
+				if (inputField.value.length > 1 &&
+				inputField.value[n-1] !== undefined &&
+				inputField.value[n-1].search(/[-/.]/) > -1 &&
+				fieldVal.substring(0, n-1).search(/[-/.]/) > -1) {
+					
+					delChr(1);
+
+				} else if (inputField.value.search(/([A-Z])/i) > -1 || inputField.value.search(/[\D]{2}/g) > -1) {	
+					inputField.value = ''; // This condition being met indicates a number of keys pressed simultaneously, bypassing the above key-press by key-press checks, so clear field fully, rather than delete character.
+				}
+			}
+			
+			// Construct the output div/area further, by updating the instructional text dynamically during inputting, while also build the html elements to host the further data manipulated from the user's entered date. Also counter any incomplete dates, by emptying the field, with default parameter set falsey for pass through during key press event (to prevent incomplete dates being deleted whilst inputting).
+			function outputBox(blur=false) {
+				if (inputField.value.length == 0) {
+					
+					inputField.value = '';
+					document.getElementById('d1').innerHTML = '<i>Enter a date in the field on the left...</i>';
+
+				} else if (blur &&
+				(inputField.value.length < 6 || isNaN(inputField.value[inputField.value.length - 2]) || isNaN(inputField.value[inputField.value.length - 4]))) {
+					
+					inputField.value = '';
+					document.getElementById('d1').innerHTML = '<i>Invalid Date Entered!</i>';
+
+				} else {
+
+					document.getElementById('d1').innerHTML = `Entered Date: <b>"${inputField.value}"</b>`;
+
+					if (blur && inputField.value.split(/[-/.]/).length == 3 && outputParentEl.childNodes.length < 10) {
+
+						let dateConstistuentsArray = inputField.value.split(/[-/.]/);
+
+						for (let i = 0; i < 3; i++) {
+							switch (dateConstistuentsArray[i].length) {
+								case 1:
+									dateConstistuentsArray[i] = '0' + dateConstistuentsArray[i]; // Prepend a literal string '0' to single digits dd or mm.
+									break;
+							}
+						}
+						
+						let dd = dateConstistuentsArray[0], mm = dateConstistuentsArray[1], yyyy = dateConstistuentsArray[2]; // Multiple variables declared on these lines.
+						let userInputDate = (new Date(yyyy, (mm-1), dd).toUTCString()).split(' 00:00:00 ');
+						let usDate = document.createElement('P'), // Build the additional html elements, to be appended to document body.
+						isoDate = document.createElement('P'), fullDate = document.createElement('P'), uaDate = document.createElement('P');
+						
+						usDate.setAttribute("id", "USDate"); // Output all data.
+						usDate.innerHTML = `US Date: <b>${mm}-${dd}-${yyyy}</b>`;
+						
+						isoDate.setAttribute("id", "ISODate");
+						isoDate.innerHTML = `ISO (International Standard) Date: <b>${yyyy}-${mm}-${dd}</b>`;
+						
+						fullDate.setAttribute("id", "fullDate");
+						fullDate.innerHTML = `Full Date Entered:</br><b>${userInputDate[0]} ${userInputDate[1]}</b>`;
+						
+						uaDate.setAttribute("id", "UADate");
+						uaDate.innerHTML = `Your Local Time (<i><u>UTC ${-(Math.floor(new Date().getTimezoneOffset()/60)) || '+/-0'} hours</u></i>):</br><b>${new Date()}</b>`;
+						
+						[usDate,isoDate,fullDate,uaDate].forEach((val) => {
+							outputParentEl.appendChild(val); // Append new elements to body, when date is complete and valid.
+						});
+					}
+				}
+			}
+		</script>
+		<!-- End of Scripting. -->
+	</body>
+</html>
+<!-- End of HTML. -->
+<!--github: tberey-->

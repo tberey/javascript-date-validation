@@ -1,12 +1,12 @@
 <!--
-!! See 'ES6 - String Field Date Validation.html', the main intended version, for more info & upcoming features!!
+!! See 'ES6 - String Field Date Validation.html', the main intended version, for more info & upcoming features !!
 
-A simple date validation tool, for any basic string input element(s), that validates dynamically as the end-user types in a UK date, and will reacts accordingly. It is designed to be as compatible as possible (both backwards & cross-browser), while covering all user inputs that could be attempted when typing in a date (both valid or invalid).
+A simple date validation tool, for any basic string input element(s), that validates dynamically as the end-user types in a UK date, and will react accordingly. It is designed to be as compatible as possible (both backwards & cross-browser), while covering all user inputs that could be attempted when typing in a date (both valid or invalid).
 
 
 There are 13 functions in this file.
 Function with the largest signature take 1 arguments, while the median is 0.
-Largest function has 22 statements in it, while the median is 2.
+Largest function has 26 statements in it, while the median is 2.
 The most complex function has a cyclomatic complexity value of 41 while the median is 1.
 -->
 
@@ -249,7 +249,7 @@ The most complex function has a cyclomatic complexity value of 41 while the medi
 			// Construct the output div/area further, by updating the instructional text dynamically during inputting, while also build the html elements to host the further data manipulated from the user's entered date. Also counter any incomplete dates, by emptying the field, with default parameter set falsey for pass through during key press event (to prevent incomplete dates being deleted whilst inputting).
 			function outputBox(blur) {
 				
-				if (inputField.value.length == 0) {
+				if (inputField.value.length == 0) { 
 					inputField.value = '';
 					document.getElementById('d1').innerHTML = '<i>Enter a date in the field on the left...</i>';
 				} else if (blur &&
@@ -268,20 +268,28 @@ The most complex function has a cyclomatic complexity value of 41 while the medi
 									break;
 							}
 						}
+
+						// Check for double digit years, and append '20' or '19' string literal to the value of yyyy (years). Decision based upon the digits entered being less than or greater than the current year (last two digits).
+						var year = new Date().getFullYear().toString();
+						if (dateConstistuentsArray[2].length == 2 && parseInt(year[2] + '' + year[3]) >= dateConstistuentsArray[2]) {
+							dateConstistuentsArray[2] = '20' + dateConstistuentsArray[2];
+						} else if (dateConstistuentsArray[2].length == 2 && parseInt(year[2] + '' + year[3]) < dateConstistuentsArray[2]) {
+							dateConstistuentsArray[2] = '19' + dateConstistuentsArray[2];
+						}
 						
 						var dd = dateConstistuentsArray[0], mm = dateConstistuentsArray[1], yyyy = dateConstistuentsArray[2]; // Multiple variables declared on these lines.
 						var userInputDate = (new Date(yyyy, (mm-1), dd).toUTCString()).split(' 00:00:00 ');
 						var usDate = document.createElement('P'), // Build the additional html elements, to be appended to document body.
 						isoDate = document.createElement('P'), fullDate = document.createElement('P'), uaDate = document.createElement('P');
 						
-						usDate.setAttribute("id", "USDate"); // Output all data.
+						usDate.setAttribute("id", "USDate"); // Construct and output data.
 						usDate.innerHTML = 'US Date: <b>' + mm + '-' + dd + '-' + yyyy + '</b>';
 						
 						isoDate.setAttribute("id", "ISODate");
 						isoDate.innerHTML = 'ISO (International Standard) Date: <b>' + yyyy + '-' + mm + '-' + dd + '</b>';
 						
 						fullDate.setAttribute("id", "fullDate");
-						fullDate.innerHTML = 'Full Date Entered:</br><b>' + userInputDate[0] + userInputDate[1] + '</b>';
+						fullDate.innerHTML = 'Full Date Entered:</br><b>' + userInputDate[0] + ', ' + userInputDate[1] + '</b>';
 						
 						uaDate.setAttribute("id", "UADate");
 						uaDate.innerHTML = 'Your Local Time (<i><u>UTC ' + (-(Math.floor(new Date().getTimezoneOffset()/60)) || '+/-0') + ' hours</u></i>):</br><b>' + (new Date()) + '</b>';

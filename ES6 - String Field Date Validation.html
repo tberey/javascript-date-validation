@@ -2,11 +2,11 @@
 
 ---------------------------------------------------------------[Version 1.0]---------------------------
 
-A simple date validation tool, for any basic string input element(s), that validates dynamically as the end-user types in a UK date, and will reacts accordingly. It is designed to be as compatible as possible (both backwards & cross-browser), while covering all user inputs that could be attempted when typing in a date (both valid or invalid). See README.md for further information.
+A simple date validation tool, for any basic string input element(s), that validates dynamically as the end-user types in a UK date, and will react accordingly. It is designed to be as compatible as possible (both backwards & cross-browser), while covering all user inputs that could be attempted when typing in a date (both valid or invalid). See README.md for further information.
 
 There are 13 functions in this file.
 Function with the largest signature take 1 arguments, while the median is 0.
-Largest function has 22 statements in it, while the median is 2.
+Largest function has 26 statements in it, while the median is 2.
 The most complex function has a cyclomatic complexity value of 41 while the median is 1.
 
 
@@ -312,13 +312,21 @@ Note: USE SELENIUM FOR CROSS USER AGENT TESTING.
 									break;
 							}
 						}
+
+						// Check for double digit years, and append '20' or '19' string literal to the value of yyyy (years). Decision based upon the digits entered being less than or greater than the current year (last two digits).
+						let year = new Date().getFullYear().toString();
+						if (dateConstistuentsArray[2].length == 2 && parseInt(year[2] + '' + year[3]) >= dateConstistuentsArray[2]) {
+							dateConstistuentsArray[2] = '20' + dateConstistuentsArray[2];
+						} else if (dateConstistuentsArray[2].length == 2 && parseInt(year[2] + '' + year[3]) < dateConstistuentsArray[2]) {
+							dateConstistuentsArray[2] = '19' + dateConstistuentsArray[2];
+						}
 						
 						let dd = dateConstistuentsArray[0], mm = dateConstistuentsArray[1], yyyy = dateConstistuentsArray[2]; // Multiple variables declared on these lines.
 						let userInputDate = (new Date(yyyy, (mm-1), dd).toUTCString()).split(' 00:00:00 ');
 						let usDate = document.createElement('P'), // Build the additional html elements, to be appended to document body.
 						isoDate = document.createElement('P'), fullDate = document.createElement('P'), uaDate = document.createElement('P');
 						
-						usDate.setAttribute("id", "USDate"); // Output all data.
+						usDate.setAttribute("id", "USDate"); // Construct & output data using template literal syntax.
 						usDate.innerHTML = `US Date: <b>${mm}-${dd}-${yyyy}</b>`;
 						
 						isoDate.setAttribute("id", "ISODate");

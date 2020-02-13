@@ -1,7 +1,7 @@
 /*
-!! See 'ES6 - String Field Date Validation.html', the main intended version, for more info & upcoming features!!
+!! See 'ES6 - String Field Date Validation.html', the main intended version, for more info & upcoming features !!
 
-A simple date validation tool, for any basic string input element(s), that validates dynamically as the end-user types in a UK date, and will reacts accordingly. It is designed to be as compatible as possible (both backwards & cross-browser), while covering all user inputs that could be attempted when typing in a date (both valid or invalid).
+A simple date validation tool, for any basic string input element(s), that validates dynamically as the end-user types in a UK date, and will react accordingly. It is designed to be as compatible as possible (both backwards & cross-browser), while covering all user inputs that could be attempted when typing in a date (both valid or invalid).
 
 
 There are 11 functions in this file.
@@ -161,22 +161,29 @@ function outputBox(blur) {
 		inputField.value = '';
 		//alert('Invalid Date Entered!');
 	} else {
-		if (blur && inputField.value.split(/[-/.]/).length == 3) {
-			var dateConstistuentsArray = inputField.value.split(/[-/.]/);
+		var dateConstistuentsArray = inputField.value.split(/[-/.]/);
+		if (blur && dateConstistuentsArray.length == 3) {
 			for (var i = 0; i < 3; i++) {
-				switch (dateConstistuentsArray[i].length) { // Prepend a literal string '0' to single digits dd or mm.
+				switch (dateConstistuentsArray[i].length) {
 					case 1:
-						dateConstistuentsArray[i] = '0' + dateConstistuentsArray[i];
+						dateConstistuentsArray[i] = '0' + dateConstistuentsArray[i]; // Prepend a literal string '0' to single digits dd or mm.
 						break;
 				}
 			}
+
+			// Check for double digit years, and append '20' or '19' string literal to the value of yyyy (years). Decision based upon the digits entered being less than or greater than the current year (last two digits).
+			var year = new Date().getFullYear().toString();
+			if (dateConstistuentsArray[2].length == 2 && parseInt(year[2] + '' + year[3]) >= dateConstistuentsArray[2]) {
+				dateConstistuentsArray[2] = '20' + dateConstistuentsArray[2];
+			} else if (dateConstistuentsArray[2].length == 2 && parseInt(year[2] + '' + year[3]) < dateConstistuentsArray[2]) {
+				dateConstistuentsArray[2] = '19' + dateConstistuentsArray[2];
+			}
 			
 			var dd = dateConstistuentsArray[0], mm = dateConstistuentsArray[1], yyyy = dateConstistuentsArray[2];
-			alert('UK Date Format: ' + dd + '-' + mm + '-' + yyyy);
+			alert('UK Date Format: ' + dd + '-' + mm + '-' + yyyy); // Construct data to output.
 			alert('US Date Format: ' + mm + '-' + dd + '-' + yyyy);
 			alert('ISO Date Format: ' + yyyy + '-' + mm + '-' + yyyy);
 			return dd, mm, yyyy;
-			
 		}
 	}
 }

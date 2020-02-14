@@ -6,13 +6,15 @@
 
   ***
 
-##### <i>For use as an extension/plugin to compensate for any Web Experience Platforms or Web Content Management & Deployment Systems that cease to support legacy browsers or browser versions.<i/>
+##### <i>For use as an extension/plugin to compensate for any Web Experience Platforms or Web Content Management & Deployment Systems that cease to support legacy browsers or browser versions. Can be embedded into most source code access points, where script execution is with the targeted element's DOM load.
+##### The ES5 Versions provide most compatibility but are least 'modern', whereas the ES6 is using the latest ECMAScript (ES) and looks favorably towards modern browsers. All versions are, however, designed with compatibility (legacy and cross-UA) in mind.<i/>
 
 ***
 *** 
 
 |Version| Changes|
 |:---|:---|
-|Version 1.0.1 [2020-02-12]|<ul><li>Spring Clean, spell check and comment tidy.</li><li>Rename file to "ES6 - ... .html".</li><li>Update "README.md".</li><li>Add new files: "ES5 Compatible" versions (CSS+HTML or JavaScript only variations).</li><li>Create new dir "Screenshots".</li><li>Add four screenshots "... .png" files to dir "Screenshots".</li></ul>|
+|Version 1.0.1 [2020-02-12]|<ul><li>Spring Clean, spell check and comment tidy.</li><li>Rename file to "ES6 - ... .html".</li><li>Update "README.md".</li><li>Add new files: "ES5 Compatible" versions (CSS+HTML or JavaScript only variations).</li><li>Create new dir /"Screenshots".</li><li>Add four screenshots "... .png" files to dir "Screenshots".</li></ul>|
 |Version 1.0.2 [2020-02-13]|<ul><li>Add feature to all script variations: Prepend year.</li><li>Update "README.md".</li></ul>|
+|Version 1.0.3 [2020-02-14]|<ul><li>Add new dir /"Test Script - ..."</li><li>Add into new dir a modified script html file for a real world example.</li><li>Update "README.md".</li><li>Changed the html extension "ES5 Compatible... .html" to a "... .htm" for further legacy support.</li><li>Update add feature list in the ES6 main html file comments, above the document head.</li></ul>|
 

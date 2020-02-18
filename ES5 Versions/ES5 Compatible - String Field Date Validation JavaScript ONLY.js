@@ -187,4 +187,3 @@ function outputBox(blur) {
 		}
 	}
 }
-//github: tberey

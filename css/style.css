@@ -1,0 +1,59 @@
+body {
+    display: flex;
+}
+
+button {
+    pointer-events: auto;
+    background-color: rgb(23, 124, 207);
+     border: none;
+    border-radius:50%;
+     color: white;
+      padding: 15px 32px;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+     font-size: 10px;
+     margin: 4px 2px;
+    cursor: pointer;
+}
+
+input[type=text] {
+    width: 30%;
+    padding: 5px;
+    margin: 20px;
+    box-sizing: border-box;
+    border: none;
+    border-bottom: 3px solid rgb(161, 1, 1);
+    color: white;
+    background-color: rgb(13, 112, 99);
+}
+
+input[type=text]:focus {
+    width: 50%;
+    color: black;
+    border: 3px solid rgb(32, 221, 32);
+    background-color: #89f885;
+}
+
+input::placeholder {
+    color: rgb(161, 1, 1);
+}
+
+#form {
+    flex: 1;
+    width: 40%;
+    border: 3px solid rgb(19, 0, 128);
+    overflow: visible;
+    background-color: rgb(13, 112, 99);
+    float: left;
+    pointer-events: none;
+}
+
+#output {
+    flex: 1;
+    width: 40%;
+    border: 3px solid rgb(4, 77, 8);
+    background-color: rgb(91, 100, 12);
+    float: left;
+    margin-left: 3px;
+}
